@@ -14,8 +14,7 @@ type IWebmentionSender<'a> =
     abstract member SendAsync : data:UrlData -> Task<ValidationResult<'a>>
 
 // Concrete implementation of IWebmentionSender
-type WebmentionSenderService (discoveryService: UrlDiscoveryService) =
-    
+type WebmentionSenderService (discoveryService: UrlDiscoveryService) = 
     let sendMentionAsync (data: EndpointUrlData) = 
         task {
             use client = new HttpClient()
