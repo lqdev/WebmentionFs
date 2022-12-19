@@ -47,12 +47,14 @@ type WebmentionSenderService (discoveryService: UrlDiscoveryService) =
         member x.SendAsync (req:HttpRequest) = 
             task {
                 let! discoveryResult = x.DiscoveryService.DiscoverEndpointAsync req
-                return! processDiscoveryResults discoveryResult
+                let! results = processDiscoveryResults discoveryResult
+                return results
             }
         member x.SendAsync (data:UrlData) = 
             task {
                 let! discoveryResult = x.DiscoveryService.DiscoverEndpointAsync data
-                return! processDiscoveryResults discoveryResult
+                let! results = processDiscoveryResults discoveryResult
+                return results
             }
 
     member x.DiscoveryService = discoveryService
