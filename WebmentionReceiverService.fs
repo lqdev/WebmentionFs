@@ -9,7 +9,8 @@ open WebmentionFs.Services
 
 // Webmention Receiver Interface
 type IWebmentionReceiver<'a> =
-    abstract member ValidateAsync : req:HttpRequest -> Task<ValidationResult<'a>>
+    abstract member ReceiveAsync : req:HttpRequest -> Task<ValidationResult<'a>>
+    abstract member ReceiveAsync : data:UrlData -> Task<ValidationResult<'a>>
 
 // Implementaiton of Webmention Receiver
 type WebmentionReceiverService (
@@ -18,7 +19,7 @@ type WebmentionReceiverService (
 
     // Concrete implementation of webmention receiver
     interface IWebmentionReceiver<Webmention> with
-        member x.ValidateAsync (req:HttpRequest) = 
+        member x.ReceiveAsync (req:HttpRequest) = 
             task {
                 let! requestValidationResult = 
                     x.RequestValidationService.ValidateAsync req
@@ -31,11 +32,11 @@ type WebmentionReceiverService (
                     let (result:ValidationResult<Webmention>) = 
                         match webmentionValidationResult with
                         | AnnotatedMention m -> 
-                            ValidationSuccess {Urls = r; Mentions = m}
+                            ValidationSuccess {RequestBody = r; Mentions = m}
                         | UnannotatedMention -> 
                             ValidationSuccess 
                                 {
-                                    Urls = r
+                                    RequestBody = r
                                     Mentions = 
                                         {
                                             IsBookmark = false
@@ -48,6 +49,36 @@ type WebmentionReceiverService (
                     return result
                 | RequestError e -> return ValidationError e
             }
+        member x.ReceiveAsync (data:UrlData) = 
+            task {
+                let! requestValidationResult = 
+                    x.RequestValidationService.ValidateAsync data
+
+                match requestValidationResult with
+                | RequestSuccess r -> 
+                    let! webmentionValidationResult = 
+                        x.WembentionValidationService.ValidateAsync r.Source r.Target
+
+                    let (result:ValidationResult<Webmention>) = 
+                        match webmentionValidationResult with
+                        | AnnotatedMention m -> 
+                            ValidationSuccess {RequestBody = r; Mentions = m}
+                        | UnannotatedMention -> 
+                            ValidationSuccess 
+                                {
+                                    RequestBody = r
+                                    Mentions = 
+                                        {
+                                            IsBookmark = false
+                                            IsLike = false
+                                            IsReply = false
+                                            IsRepost = false        
+                                        }
+                                }
+                        | MentionError e -> ValidationError e
+                    return result
+                | RequestError e -> return ValidationError e
+            }            
 
     member x.RequestValidationService = requestValidationService
     member x.WembentionValidationService = webmentionValidationService

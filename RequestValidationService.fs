@@ -4,26 +4,9 @@ open System
 open System.Net.Http
 open Microsoft.AspNetCore.Http
 open WebmentionFs
+open WebmentionFs.Utils
 
 type RequestValidationService (hostList: string array) = 
-
-    // Process HttpRequest and extract source and target urls from form body
-    let getSourceAndTargetUrlsFromFormBody (req:HttpRequest) = 
-        try
-            let source = req.Form["source"].ToString() |> Uri
-            let target = req.Form["target"].ToString() |> Uri
-            RequestSuccess { Source=source; Target=target }
-        with
-            | ex -> RequestError $"{ex}"
-
-    // Send HTTP HEAD request to HTML document 
-    let getDocumentAsync (uri:Uri) = 
-        task {
-            use client = new HttpClient()
-            let reqMessage = new HttpRequestMessage(HttpMethod.Head, uri)
-            let! response = client.SendAsync(reqMessage)
-            return response
-        }
 
     // Check whether a URL is one of the domains I own
     let isUrlMine (uri:Uri) (hostList:string array)= 
@@ -51,7 +34,7 @@ type RequestValidationService (hostList: string array) =
         match result with 
         | RequestSuccess r -> 
             match r.Source.Equals(r.Target) with
-            | true -> RequestError "Sourrce and target urls are the same"
+            | true -> RequestError "Source and target urls are the same"
             | false -> RequestSuccess r
         | RequestError e -> RequestError e
 
@@ -62,7 +45,7 @@ type RequestValidationService (hostList: string array) =
         | RequestSuccess r -> 
             task {
                 let targetIsMine = isUrlMine r.Target hostList
-                let! targetDocResponse = getDocumentAsync r.Target
+                let! targetDocResponse = getDocumentHeadersAsync r.Target
 
                 let isTargetValid = 
                     targetIsMine && targetDocResponse.IsSuccessStatusCode
@@ -79,9 +62,20 @@ type RequestValidationService (hostList: string array) =
         isProtocolValid >> isSameUrl >> isTargetUrlValidAsync
 
     member _.ValidateAsync (req:HttpRequest) = 
-        task {
-            return! 
-                req 
-                |> getSourceAndTargetUrlsFromFormBody
-                |> validateAsync
-        }
+        
+        let parseResults = getSourceAndTargetUrlsFromFormBody req
+
+        match parseResults with
+        | ParseSuccess s -> 
+            task { 
+                let! validationResult = RequestSuccess s |> validateAsync
+                return validationResult
+            } 
+        | ParseError e -> task { return RequestError e }
+
+    member _.ValidateAsync (data:UrlData) = 
+        
+        task { 
+            let! validationResult = RequestSuccess data |> validateAsync
+            return validationResult
+        } 

@@ -16,6 +16,9 @@
 
   <ItemGroup>
     <Compile Include="Domain.fs" />
+    <Compile Include="Utils.fs" />
+    <Compile Include="UrlDiscoveryService.fs" />
+    <Compile Include="WebmentionSenderService.fs" />
     <Compile Include="RequestValidationService.fs" />
     <Compile Include="WebmentionValidationService.fs" />
     <Compile Include="WebmentionReceiverService.fs" />

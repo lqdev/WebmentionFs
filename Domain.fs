@@ -8,6 +8,12 @@ type UrlData =
         Target: Uri
     }
 
+type EndpointUrlData = 
+    {
+        Endpoint: Uri
+        RequestBody: UrlData
+    }
+
 type MentionTypes = 
     {
         IsBookmark: bool
@@ -18,9 +24,17 @@ type MentionTypes =
 
 type Webmention = 
     {
-        Urls: UrlData
+        RequestBody: UrlData
         Mentions: MentionTypes
     }
+
+type FormParseResult = 
+    | ParseSuccess of UrlData
+    | ParseError of string
+
+type DiscoveryResult = 
+    | DiscoverySuccess of EndpointUrlData
+    | DiscoveryError of string
 
 type RequestValidationResult = 
     | RequestSuccess of UrlData

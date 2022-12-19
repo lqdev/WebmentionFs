@@ -7,8 +7,5 @@ Currently supports:
 - [x] Request validation
 - [x] Webmention validation
 - [x] Receive webmentions
-
-Wishlist
-
-- [ ] Webmention URL discovery
-- [ ] Send webmentions
+- [x] Webmention URL discovery
+- [x] Send webmentions

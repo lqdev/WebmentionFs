@@ -2,50 +2,39 @@ namespace WebmentionFs.Services
 
 open System
 open System.Net.Http
-open System.Net.Http.Headers
 open FSharp.Data
 open WebmentionFs
+open WebmentionFs.Utils
 
 type WebmentionValidationService () = 
 
-    let getSourceDocumentAsync (source:Uri) = 
-        task {
-            // Prepare HTTP GET request
-            use client = new HttpClient()
-            let reqMessage = new HttpRequestMessage(new HttpMethod(HttpMethod.Get), source)
-            reqMessage.Headers.Accept.Clear()
-
-            // Only accept text/html content
-            reqMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"))
-
-            //Send HTTP request
-            return! client.SendAsync(reqMessage)
-        }
-
-    // Use CSS selectors to find target link in source document
-    let findTargetUrlInSourceDocument (doc:HtmlDocument) (selector:string) (target:Uri) = 
-        doc.CssSelect(selector)
-        |> List.map(fun x -> x.AttributeValue("href"))
-        |> List.filter(fun x -> x = target.OriginalString)
+    let findTargetUrlInSourceDocument (targetUrl:string) (links:string list) = 
+        links
+        |> List.filter(fun link -> link = targetUrl)
 
     // Identify webmentions in source document using microformat annotations
     let findMentionsInSourceDocument (doc:HtmlDocument) (target:Uri) = 
 
         // Get mentions annotated as bookmarks
         let bookmarks = 
-            findTargetUrlInSourceDocument doc ".u-bookmark-of" target
+            (getUrlFromSourceDocument doc ".u-bookmark-of" target)
+            |> findTargetUrlInSourceDocument target.OriginalString
 
         // Get mentions annotated as replies
         let replies = 
-            findTargetUrlInSourceDocument doc ".u-in-reply-to" target
+            (getUrlFromSourceDocument doc ".u-in-reply-to" target)
+            |> findTargetUrlInSourceDocument target.OriginalString
 
         // Get mentions annotated as likes 
         let likes = 
-            findTargetUrlInSourceDocument doc ".u-like-of" target
+            (getUrlFromSourceDocument doc ".u-like-of" target)
+            |> findTargetUrlInSourceDocument target.OriginalString
+
 
         // Get mentions annotated as reposts
         let reposts = 
-            findTargetUrlInSourceDocument doc ".u-repost-of" target
+            (getUrlFromSourceDocument doc ".u-repost-of" target)
+            |> findTargetUrlInSourceDocument target.OriginalString
 
         // Group all annotated webmentions
         let annotatedMentions = 
@@ -53,7 +42,8 @@ type WebmentionValidationService () =
 
         // Group all unannotated webmentions
         let unannotatedMentions = 
-            findTargetUrlInSourceDocument doc "a" target
+            (getUrlFromSourceDocument doc "a" target)
+            |> findTargetUrlInSourceDocument target.OriginalString
 
         annotatedMentions,unannotatedMentions
 
@@ -81,7 +71,7 @@ type WebmentionValidationService () =
 
     member _.ValidateAsync (source:Uri) (target:Uri) = 
         task {
-            let! sourceDocResponse = source |> getSourceDocumentAsync
+            let! sourceDocResponse = source |> getDocumentContentAsync
 
             match sourceDocResponse.IsSuccessStatusCode with
             | true -> 
