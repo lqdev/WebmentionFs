@@ -5,7 +5,7 @@
     <PackageId>lqdev.WebmentionFs</PackageId>
     <Title>WebmentionFs</Title>
     <Description></Description>
-    <Version>0.0.3</Version>
+    <Version>0.0.5</Version>
     <Authors>Luis Quintanilla</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/lqdev/WebmentionFs</PackageProjectUrl>
