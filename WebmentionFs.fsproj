@@ -1,7 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <PackageId>lqdev.WebmentionFs</PackageId>
+    <Title>WebmentionFs</Title>
+    <Description></Description>
+    <Version>0.0.2</Version>
+    <Authors>Luis Quintanilla</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/lqdev/WebmentionFs</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lqdev/WebmentionFs.git</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- <GenerateDocumentationFile>true</GenerateDocumentationFile> -->
   </PropertyGroup>
 
@@ -15,6 +24,10 @@
   <ItemGroup>
     <PackageReference Include="FSharp.Data" Version="5.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
