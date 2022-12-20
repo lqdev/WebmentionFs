@@ -15,6 +15,7 @@ type IWebmentionSender<'a> =
 
 // Concrete implementation of IWebmentionSender
 type WebmentionSenderService (discoveryService: UrlDiscoveryService) = 
+    
     let sendMentionAsync (data: EndpointUrlData) = 
         task {
             use client = new HttpClient()
@@ -27,7 +28,8 @@ type WebmentionSenderService (discoveryService: UrlDiscoveryService) =
                 ]
 
             let content = new FormUrlEncodedContent(reqData)
-            let! (response:HttpResponseMessage) = client.PostAsync(data.Endpoint, content)
+            
+            let! response = client.PostAsync(data.Endpoint.OriginalString, content)
             return response
         }
 
@@ -38,7 +40,9 @@ type WebmentionSenderService (discoveryService: UrlDiscoveryService) =
                 let! response =  sendMentionAsync s
                 match response.IsSuccessStatusCode with
                 | true -> return ValidationSuccess s
-                | false -> return ValidationError "Error sending webmention"
+                | false -> 
+                    let! errorMessage = response.Content.ReadAsStringAsync()
+                    return ValidationError $"{errorMessage}"
             }
         | DiscoveryError e -> task { return ValidationError e }
 
@@ -58,3 +62,6 @@ type WebmentionSenderService (discoveryService: UrlDiscoveryService) =
             }
 
     member x.DiscoveryService = discoveryService
+
+    member x.SendAsync (req:HttpRequest) = (x :> IWebmentionSender<EndpointUrlData>).SendAsync(req)
+    member x.SendAsync (data:UrlData) = (x :> IWebmentionSender<EndpointUrlData>).SendAsync(data)

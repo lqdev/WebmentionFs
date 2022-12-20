@@ -10,23 +10,20 @@ type UrlDiscoveryService () =
 
     let getEndpointFromHref (urlData:UrlData) (cssSelector:string) = 
         task {
-            let! docResponse = getDocumentContentAsync urlData.Source
+            let! docResponse = getDocumentContentAsync urlData.Target
 
-            let! docContent = 
-                match docResponse.IsSuccessStatusCode with
-                | true -> 
-                    task {
-                        let! content = docResponse.Content.ReadAsStringAsync()
-                        return HtmlDocument.Parse(content)
-                    }
+            let! body = docResponse.Content.ReadAsStringAsync()
+            
+            let docContent = HtmlDocument.Parse(body)
+
+            let urls = getUrlFromSourceDocument docContent cssSelector urlData.Target
+
+            return 
+                match urls.IsEmpty with
+                | true -> DiscoveryError $"Could not find endpoint in {cssSelector}"
                 | false -> 
-                    task { return HtmlDocument.Parse("<html></html>") }
-
-            let webmentionUrl = 
-                getUrlFromSourceDocument docContent cssSelector urlData.Target
-                |> List.head
-
-            return webmentionUrl
+                    let webmentionUrl = urls |> List.head
+                    DiscoverySuccess { Endpoint = new Uri(webmentionUrl); RequestBody = urlData }             
         }
 
     let discoverUrlInHeaderAsync (data:UrlData) = 
@@ -71,9 +68,7 @@ type UrlDiscoveryService () =
     let discoverUrlInLinkTagAsync (data:UrlData) = 
         try
             task {
-                let! webmentionUrl = getEndpointFromHref data "link[rel='webmention']"
-
-                return DiscoverySuccess { Endpoint = new Uri(webmentionUrl); RequestBody = data }
+                return! getEndpointFromHref data "link[rel='webmention']"
             }
         with
             | ex -> task { return DiscoveryError $"{ex}" }         
@@ -81,25 +76,25 @@ type UrlDiscoveryService () =
     let discoverUrlInAnchorTagAsync (data: UrlData) = 
         try
             task {
-                let! webmentionUrl = getEndpointFromHref data "a[rel='webmention']"
-                return DiscoverySuccess { Endpoint = new Uri(webmentionUrl); RequestBody = data }
+                return! getEndpointFromHref data "a[rel='webmention']"
             }
         with
             | ex -> task { return DiscoveryError $"{ex}" }        
 
     let constructUrl (data: EndpointUrlData) = 
-        
+
+        let scheme = data.Endpoint.Scheme
         let authority = data.RequestBody.Target.GetLeftPart(UriPartial.Authority)
 
         let constructedUrl = 
-            match data.Endpoint.Scheme.Contains("http") with
+            match scheme.Contains("http") with
             | true -> data.Endpoint
             | false -> 
                 let noQueryUrl = 
                     data.Endpoint.OriginalString.Split("?")
                     |> Array.head
 
-                new Uri($"{authority}{noQueryUrl}")
+                new Uri($"{scheme}://{authority}{noQueryUrl}")
 
         { data with Endpoint = constructedUrl }
 
