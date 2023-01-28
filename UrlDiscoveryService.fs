@@ -83,8 +83,6 @@ type UrlDiscoveryService () =
 
     let constructUrl (data: EndpointUrlData) = 
 
-        printfn $"{data}"
-
         let scheme = data.Endpoint.Scheme
         let authority = data.RequestBody.Target.GetLeftPart(UriPartial.Authority)
 
@@ -97,9 +95,6 @@ type UrlDiscoveryService () =
                     |> Array.head
 
                 new Uri($"{authority}{noQueryUrl}")
-
-        printfn $"{authority}"
-        printfn $"{constructedUrl}"
 
         { data with Endpoint = constructedUrl }
 
