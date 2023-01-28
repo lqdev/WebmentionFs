@@ -12,8 +12,8 @@ let ws = new WebmentionSenderService(ds)
 
 let data = 
     {   
-        Source = new Uri("https://twitter.com/ljquintanilla/status/1603602055435894784")  
-        Target = new Uri("https://www.luisquintanilla.me/feed/mastodon-hashtag-rss-boffosocko")
+        Source = new Uri("http://lqdev.me/feed/webmentionfs-send-test")  
+        Target = new Uri("https://webmention.rocks/test/1")
     }
 
 ws.SendAsync(data) |> Async.AwaitTask |> Async.RunSynchronously
