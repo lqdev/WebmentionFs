@@ -134,7 +134,7 @@ type UrlDiscoveryService () =
 
     /// <summary>
     /// Discovers webmention endpoint using all available methods.
-    /// Tries HTTP headers, link elements, and anchor elements in parallel.
+    /// Tries HTTP headers, link elements, and anchor elements sequentially.
     /// Returns the first successfully discovered endpoint.
     /// </summary>
     /// <param name="data">The source and target URL data.</param>

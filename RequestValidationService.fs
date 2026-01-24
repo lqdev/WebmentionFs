@@ -32,15 +32,15 @@ type RequestValidationService (hostList: string array) =
     let isProtocolValid (result:RequestValidationResult) =
         match result with
         | RequestSuccess r -> 
-            let sourceProtocol = r.Source.Scheme.Equals("http") || r.Source.Scheme.Equals("https")
-            let targetProtocol = r.Target.Scheme.Equals("http") || r.Target.Scheme.Equals("https")
+            let sourceProtocol = r.Source.Scheme.Equals(Http.httpScheme) || r.Source.Scheme.Equals(Http.httpsScheme)
+            let targetProtocol = r.Target.Scheme.Equals(Http.httpScheme) || r.Target.Scheme.Equals(Http.httpsScheme)
 
             let protocolResult = 
                 match sourceProtocol,targetProtocol with
                 | true, true -> RequestSuccess r
-                | true, false -> RequestError "Invalid target Protocol"
-                | false, true -> RequestError "Invalid source protocol"
-                | false,false -> RequestError "Invalid source and target protocol"
+                | true, false -> RequestError ErrorMessages.invalidTargetProtocol
+                | false, true -> RequestError ErrorMessages.invalidSourceProtocol
+                | false,false -> RequestError ErrorMessages.invalidBothProtocols
 
             protocolResult
         | RequestError e -> RequestError e

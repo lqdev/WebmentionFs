@@ -87,9 +87,14 @@ type WebmentionValidationService () =
     /// <param name="unannotatedMentions">List of generic unannotated mentions.</param>
     /// <returns>AnnotatedMention with type classification, UnannotatedMention, or MentionError if no mentions found.</returns>
     let validate (annotatedMentions:string list list, unannotatedMentions:string list) = 
-        match annotatedMentions.IsEmpty,unannotatedMentions.IsEmpty with
-        | true, true -> MentionError ErrorMessages.targetNotMentioned
-        | true, false | false, false -> 
+        // Check if there are any annotated mentions
+        let hasAnyAnnotatedMention = annotatedMentions |> List.exists (fun mentions -> not mentions.IsEmpty)
+        let hasUnannotatedMention = not unannotatedMentions.IsEmpty
+        
+        match hasAnyAnnotatedMention, hasUnannotatedMention with
+        | false, false -> MentionError ErrorMessages.targetNotMentioned
+        | false, true -> UnannotatedMention
+        | true, _ -> 
             let isBookmark = hasMention annotatedMentions[0]
             let isLike = hasMention annotatedMentions[1]
             let isReply = hasMention annotatedMentions[2]
@@ -102,7 +107,6 @@ type WebmentionValidationService () =
                     IsReply = isReply
                     IsRepost = isRepost
                 }
-        | false, true -> UnannotatedMention
 
     /// <summary>
     /// Validates that a source document contains a valid mention of the target URL.
