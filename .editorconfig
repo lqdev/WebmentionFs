@@ -1,0 +1,92 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# F# files
+[*.{fs,fsx,fsi}]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+max_line_length = 120
+
+# F# specific formatting preferences
+# See https://github.com/fsprojects/fantomas for more options
+
+# Use spaces around operators
+fsharp_space_before_parameter = true
+fsharp_space_before_lowercase_invocation = true
+fsharp_space_before_uppercase_invocation = false
+fsharp_space_before_class_constructor = false
+fsharp_space_before_member = false
+fsharp_space_before_colon = false
+fsharp_space_after_comma = true
+fsharp_space_before_semicolon = false
+fsharp_space_after_semicolon = true
+fsharp_space_around_delimiter = true
+
+# Indent settings
+fsharp_indent_on_try_with = false
+fsharp_align_function_signature_to_indentation = false
+fsharp_alternative_long_member_definitions = false
+
+# Max line length
+fsharp_max_line_length = 120
+
+# Newline preferences
+fsharp_max_if_then_else_short_width = 40
+fsharp_max_infix_operator_expression = 50
+fsharp_max_record_width = 40
+fsharp_max_array_or_list_width = 40
+fsharp_max_value_binding_width = 40
+fsharp_max_function_binding_width = 40
+fsharp_max_dot_get_expression_width = 50
+fsharp_multiline_block_brackets_on_same_column = false
+fsharp_newline_between_type_definition_and_members = true
+fsharp_keep_if_then_in_same_line = false
+
+# Pattern matching
+fsharp_bar_before_discriminated_union_declaration = false
+fsharp_multiline_infix_multiline_formatter = character_width
+
+# Record formatting
+fsharp_record_multiline_formatter = character_width
+fsharp_array_or_list_multiline_formatter = character_width
+
+# Blank lines
+fsharp_blank_lines_around_nested_multiline_expressions = true
+
+# F# project files
+[*.fsproj]
+indent_size = 2
+
+# XML files
+[*.{xml,config,props,targets,nuspec,resx,ruleset}]
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# YAML files
+[*.{yml,yaml}]
+indent_size = 2
+
+# Markdown files
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+# Shell scripts
+[*.sh]
+end_of_line = lf
+
+# Batch files
+[*.{cmd,bat}]
+end_of_line = crlf
