@@ -18,80 +18,116 @@
 
 ### Build Commands (VALIDATED - All Working)
 
-**ALWAYS run commands in this exact order:**
-
+**Build from solution (recommended):**
 ```bash
-# 1. Clean build (takes ~0.7s)
-dotnet clean
+# 1. Restore all projects
+dotnet restore WebmentionFs.slnx
 
-# 2. Restore packages (takes ~2-3s on first run, instantaneous after)
-dotnet restore
+# 2. Build all projects (library + tests)
+dotnet build WebmentionFs.slnx
 
-# 3. Build Debug (takes ~3-4s after restore, ~10s from clean)
-dotnet build
+# 3. Build Release
+dotnet build WebmentionFs.slnx --configuration Release
 
-# 4. Build Release (takes ~3-4s)
-dotnet build --configuration Release
-
-# 5. Create NuGet package (only if needed)
-dotnet pack --configuration Release
+# 4. Create NuGet package
+dotnet pack src/WebmentionFs/WebmentionFs.fsproj --configuration Release
 ```
 
-**Build Output**: `bin/Debug/netstandard2.1/WebmentionFs.dll` or `bin/Release/netstandard2.1/WebmentionFs.dll`
+**Build library only:**
+```bash
+cd src/WebmentionFs
+dotnet clean
+dotnet restore
+dotnet build
+```
+
+**Build Output**: `src/WebmentionFs/bin/Debug/netstandard2.1/WebmentionFs.dll`
 
 ### Testing
 
-**Interactive test script** (`test.fsx`):
+**XUnit tests** (proper test suite):
+```bash
+# Run all tests
+dotnet test WebmentionFs.slnx
+
+# Or from tests directory
+cd tests/WebmentionFs.Tests
+dotnet test
+```
+
+**Interactive test script** (`test.fsx` - for manual exploration):
 ```bash
 dotnet fsi test.fsx
 ```
 
-**KNOWN ISSUE**: The test script has a version compatibility issue with FSharp.Data when running via `dotnet fsi`. The library builds successfully, but the test script may fail with `TypeLoadException` related to `FSharp.Data.HttpMethod`. This does NOT affect the compiled library - only the interactive test script. You can safely ignore test.fsx failures if the build succeeds.
+**Note**: `test.fsx` references `./src/WebmentionFs/bin/Debug/netstandard2.1/WebmentionFs.dll` - build the library first.
 
 ### Validation Checklist
-- ✓ `dotnet build` must succeed with 0 warnings, 0 errors
+- ✓ `dotnet build WebmentionFs.slnx` must succeed with 0 warnings, 0 errors
+- ✓ `dotnet test WebmentionFs.slnx` must pass all XUnit tests
 - ✓ XML documentation is generated (`GenerateDocumentationFile=true`)
 - ✓ No F# specific formatter (fantomas) configured - rely on .editorconfig
-- ✓ No formal unit tests - validation done via test.fsx (interactive)
 
 ### NO CI/CD Yet
 The README mentions CI, but **no .github/workflows directory exists**. There are no automated checks to replicate. When making changes:
-1. Run `dotnet build` - must succeed with 0 warnings
-2. Verify XML docs are present on public APIs
-3. Follow F# conventions in CONTRIBUTING.md
+1. Run `dotnet build WebmentionFs.slnx` - must succeed with 0 warnings
+2. Run `dotnet test WebmentionFs.slnx` - all tests must pass
+3. Verify XML docs are present on public APIs
+4. Follow F# conventions in CONTRIBUTING.md
 
 ## Project Structure
 
+### Directory Layout
+
+```
+WebmentionFs/
+├── .github/                    # GitHub configuration
+├── src/
+│   └── WebmentionFs/          # Main library project
+│       ├── Domain.fs          # Core types (no dependencies)
+│       ├── Constants.fs       # String constants, CSS selectors
+│       ├── Utils.fs           # Pure utility functions (module)
+│       ├── UrlDiscoveryService.fs
+│       ├── RequestValidationService.fs
+│       ├── WebmentionValidationService.fs
+│       ├── WebmentionReceiverService.fs
+│       ├── WebmentionSenderService.fs
+│       └── WebmentionFs.fsproj
+├── tests/
+│   └── WebmentionFs.Tests/   # XUnit test project (.NET 8.0)
+│       ├── Tests.fs
+│       └── WebmentionFs.Tests.fsproj
+├── WebmentionFs.slnx         # Solution file
+├── test.fsx                  # Interactive test script
+└── [docs, config files...]
+```
+
 ### File Organization (CRITICAL - Order Matters)
 
-F# projects require **dependency order** in .fsproj. Files are compiled top-to-bottom:
+F# projects require **dependency order** in .fsproj. Files in `src/WebmentionFs/` are compiled top-to-bottom:
 
 ```
-WebmentionFs.fsproj (defines compilation order)
-├── Domain.fs                      # Core types (no dependencies)
-├── Constants.fs                   # String constants, CSS selectors
-├── Utils.fs                       # Pure utility functions (module)
-├── UrlDiscoveryService.fs         # Endpoint discovery service
-├── RequestValidationService.fs    # Request validation service
-├── WebmentionValidationService.fs # Content validation service
-├── WebmentionReceiverService.fs   # Complete receive pipeline
-└── WebmentionSenderService.fs     # Complete send pipeline
+Domain.fs → Constants.fs → Utils.fs → UrlDiscoveryService.fs 
+→ RequestValidationService.fs → WebmentionValidationService.fs 
+→ WebmentionReceiverService.fs → WebmentionSenderService.fs
 ```
 
-**Never reorder files in .fsproj** - it will break compilation.
+**Never reorder files in WebmentionFs.fsproj** - it will break compilation.
 
 ### Key Directories
-- `/` - Source files at root (no `src/` directory)
-- `bin/` - Build output (gitignored)
-- `obj/` - Build artifacts (gitignored)
-- `.github/` - GitHub configs (you may be creating this)
-- No tests/ or samples/ directories exist
+- `src/WebmentionFs/` - Main library source files (.NET Standard 2.1)
+- `tests/WebmentionFs.Tests/` - XUnit test project (.NET 8.0)
+- `src/WebmentionFs/bin/` - Build output (gitignored)
+- `src/WebmentionFs/obj/` - Build artifacts (gitignored)
+- `.github/` - GitHub configuration
 
 ### Configuration Files
 - `.editorconfig` - F# formatting rules (4 spaces, 120 char lines, LF endings)
 - `.gitignore` - Standard Visual Studio/Rider/VS Code ignores
 - `.devcontainer.json` - VS Code devcontainer with Ionide F# extension
-- `WebmentionFs.fsproj` - Project file (XML, 2-space indent)
+- `WebmentionFs.slnx` - Solution file (XML format)
+- `src/WebmentionFs/WebmentionFs.fsproj` - Library project file
+- `tests/WebmentionFs.Tests/WebmentionFs.Tests.fsproj` - Test project file
 
 ### Documentation Files (Read These First!)
 1. **CONTRIBUTING.md** - F# conventions, naming, async patterns, error handling
@@ -140,32 +176,37 @@ if invalid then failwith "Error"  // ❌ Return ValidationError instead
 ### Where to Add Code
 | Feature Type | File | Pattern |
 |-------------|------|---------|
-| New domain type | Domain.fs | Add discriminated union or record |
-| New constant/selector | Constants.fs | Add to appropriate module |
-| New utility function | Utils.fs | Add pure function to module |
-| New validation rule | RequestValidationService.fs | Add to validation pipeline |
-| New service | New .fs file | Create class, add to .fsproj AFTER all dependencies |
+| New domain type | src/WebmentionFs/Domain.fs | Add discriminated union or record |
+| New constant/selector | src/WebmentionFs/Constants.fs | Add to appropriate module |
+| New utility function | src/WebmentionFs/Utils.fs | Add pure function to module |
+| New validation rule | src/WebmentionFs/RequestValidationService.fs | Add to validation pipeline |
+| New service | src/WebmentionFs/NewService.fs | Create class, add to .fsproj AFTER all dependencies |
+| New test | tests/WebmentionFs.Tests/Tests.fs | Add XUnit test with [<Fact>] or [<Theory>] |
 
 ### Before Committing
-1. Run `dotnet build` - verify 0 warnings, 0 errors (takes ~3-4s)
-2. Check XML docs on any new public APIs
-3. Verify no magic strings - use Constants module
-4. Ensure discriminated unions for all results
-5. Confirm async uses `task {}` not blocking calls
+1. Run `dotnet build WebmentionFs.slnx` - verify 0 warnings, 0 errors
+2. Run `dotnet test WebmentionFs.slnx` - all tests must pass
+3. Check XML docs on any new public APIs
+4. Verify no magic strings - use Constants module
+5. Ensure discriminated unions for all results
+6. Confirm async uses `task {}` not blocking calls
 
 ### Common Gotchas
-- **File order matters** - dependencies must come before dependents in .fsproj
-- **No .github directory** - you may need to create it for workflows
-- **test.fsx has known issue** - ignore FSharp.Data TypeLoadException in test script
-- **Build from clean is slower** - first build after clean takes ~10s, incremental builds ~3-4s
-- **No separate test project** - testing is via test.fsx interactive script
+- **File order matters** - dependencies must come before dependents in src/WebmentionFs/WebmentionFs.fsproj
+- **Paths changed** - source files now in `src/WebmentionFs/`, not at root
+- **Solution file** - use `WebmentionFs.slnx` to build both library and tests
+- **Test project** - XUnit tests in `tests/WebmentionFs.Tests/` target .NET 8.0
+- **test.fsx path** - references `./src/WebmentionFs/bin/Debug/netstandard2.1/WebmentionFs.dll`
 
 ## Key Files Quick Reference
 
-**Domain.fs** (99 lines) - All core types: UrlData, ValidationResult, DiscoveryResult, WebmentionValidationResult, MentionTypes  
-**Constants.fs** (138 lines) - EndpointSelectors, MentionSelectors, Http constants, FormFields, ErrorMessages  
-**Utils.fs** (84 lines) - getSourceAndTargetUrlsFromFormBody, getDocumentHeadersAsync, getDocumentContentAsync, getUrlFromSourceDocument  
-**Services** (5 files, ~4-8KB each) - Complete webmention send/receive implementation
+**src/WebmentionFs/Domain.fs** (99 lines) - All core types: UrlData, ValidationResult, DiscoveryResult, WebmentionValidationResult, MentionTypes  
+**src/WebmentionFs/Constants.fs** (138 lines) - EndpointSelectors, MentionSelectors, Http constants, FormFields, ErrorMessages  
+**src/WebmentionFs/Utils.fs** (84 lines) - getSourceAndTargetUrlsFromFormBody, getDocumentHeadersAsync, getDocumentContentAsync, getUrlFromSourceDocument  
+**src/WebmentionFs/Services** (5 files, ~4-8KB each) - Complete webmention send/receive implementation  
+**tests/WebmentionFs.Tests/Tests.fs** - XUnit tests for core domain types and services  
+**WebmentionFs.slnx** - Solution file organizing library and test projects  
+**test.fsx** - Interactive test script (references built DLL from src/WebmentionFs/bin/)
 
 ## Trust These Instructions
 
