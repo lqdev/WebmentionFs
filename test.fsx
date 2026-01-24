@@ -1,7 +1,7 @@
 // WebmentionFs Interactive Test Script
 // This script demonstrates the library's capabilities and can be used for manual testing
 
-#r "./bin/Debug/netstandard2.1/WebmentionFs.dll"
+#r "./src/WebmentionFs/bin/Debug/netstandard2.1/WebmentionFs.dll"
 #r "nuget:Microsoft.AspNetCore.Http.Abstractions"
 #r "nuget:FSharp.Data"
 
