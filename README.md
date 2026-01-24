@@ -6,6 +6,8 @@
 
 A comprehensive F# library for processing [webmentions](https://www.w3.org/TR/webmention/) according to the W3C specification. WebmentionFs provides a complete toolkit for both sending and receiving webmentions, with built-in validation and URL discovery capabilities.
 
+Built with modern F# best practices, leveraging discriminated unions, immutability, and type-safe error handling.
+
 ## ✨ Features
 
 - **🔍 URL Discovery**: Automatic webmention endpoint discovery from HTML pages
@@ -15,6 +17,13 @@ A comprehensive F# library for processing [webmentions](https://www.w3.org/TR/we
 - **🏷️ Mention Classification**: Identify different types of mentions (likes, replies, reposts, bookmarks)
 - **🔒 Security**: Built-in validation to prevent spam and malicious requests
 - **🌐 Standards Compliant**: Full compliance with W3C Webmention specification
+- **🎯 Modern F#**: Idiomatic F# with discriminated unions, immutability, and explicit error handling
+- **📚 Well Documented**: Comprehensive XML documentation and architectural guides
+
+## 🎯 Target Framework
+
+- **.NET Standard 2.1**: Compatible with .NET Core 3.0+, .NET 5+, .NET 6+, and later
+- **Modern F#**: Uses latest F# language features (task CE, string interpolation, enhanced pattern matching) while maintaining .NET Standard 2.1 compatibility
 
 ## 📦 Installation
 
@@ -296,9 +305,28 @@ Common error scenarios:
 - Network connectivity issues
 - Invalid request format
 
+## 🏗️ Architecture & Design
+
+WebmentionFs is built using modern F# idioms and best practices:
+
+- **Discriminated Unions**: All result types use discriminated unions for explicit, type-safe error handling
+- **Immutability**: All domain types are immutable records
+- **Function Composition**: Validation pipelines use function composition for clarity
+- **Explicit Errors**: No hidden exceptions - all failures are represented in return types
+- **Modern Async**: Uses `task {}` computation expressions for async operations
+- **Type Safety**: Leverages F#'s type system to prevent invalid states
+
+For detailed architectural information, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Documentation for Contributors
+
+- **[CONTRIBUTING.md](CONTRIBUTING.md)**: F# coding conventions, development workflow, testing guidelines
+- **[ARCHITECTURE.md](ARCHITECTURE.md)**: Design decisions, module relationships, extension points
+- **[AI_ASSISTANT_GUIDE.md](AI_ASSISTANT_GUIDE.md)**: Guide for AI coding assistants working with this codebase
 
 ### Development Setup
 
@@ -313,17 +341,23 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
    dotnet build
    ```
 
-3. Run tests:
+3. Run interactive tests:
    ```bash
-   dotnet test
+   dotnet fsi test.fsx
    ```
 
-### Guidelines
+### F# Conventions
 
-- Follow F# coding conventions
-- Add tests for new functionality
-- Update documentation for API changes
-- Ensure all tests pass before submitting PR
+This project follows modern F# best practices:
+
+- **camelCase** for values and functions
+- **PascalCase** for types and modules
+- Discriminated unions for state representation
+- Explicit error handling with Result types
+- Pure functions and immutable data
+- `task {}` for async operations
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## 📄 License
 
@@ -337,10 +371,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📚 Additional Resources
 
-- [Webmention Specification](https://www.w3.org/TR/webmention/)
-- [IndieWeb Webmention Guide](https://indieweb.org/Webmention)
-- [Microformats2](http://microformats.org/wiki/microformats2)
-- [FSharp.Data Documentation](https://fsprojects.github.io/FSharp.Data/)
+- **Project Documentation**
+  - [Architecture Guide](ARCHITECTURE.md)
+  - [Contributing Guide](CONTRIBUTING.md)
+  - [AI Assistant Guide](AI_ASSISTANT_GUIDE.md)
+- **Webmention Resources**
+  - [Webmention Specification](https://www.w3.org/TR/webmention/)
+  - [IndieWeb Webmention Guide](https://indieweb.org/Webmention)
+  - [Microformats2](http://microformats.org/wiki/microformats2)
+- **F# Resources**
+  - [F# Language Guide](https://learn.microsoft.com/en-us/dotnet/fsharp/)
+  - [F# Style Guide](https://learn.microsoft.com/en-us/dotnet/fsharp/style-guide/)
+  - [FSharp.Data Documentation](https://fsprojects.github.io/FSharp.Data/)
+- **Development Tools**
+  - [.NET Standard](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)
 
 ---
 
