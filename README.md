@@ -328,6 +328,31 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)**: Design decisions, module relationships, extension points
 - **[AI_ASSISTANT_GUIDE.md](AI_ASSISTANT_GUIDE.md)**: Guide for AI coding assistants working with this codebase
 
+### Project Structure
+
+The repository follows standard F# project organization:
+
+```
+WebmentionFs/
+├── src/
+│   └── WebmentionFs/          # Main library source code
+│       ├── Domain.fs           # Core types and domain models
+│       ├── Constants.fs        # Constants and configuration
+│       ├── Utils.fs            # Utility functions
+│       ├── UrlDiscoveryService.fs
+│       ├── RequestValidationService.fs
+│       ├── WebmentionValidationService.fs
+│       ├── WebmentionReceiverService.fs
+│       ├── WebmentionSenderService.fs
+│       └── WebmentionFs.fsproj
+├── tests/
+│   └── WebmentionFs.Tests/    # XUnit test project
+│       ├── Tests.fs            # Unit tests
+│       └── WebmentionFs.Tests.fsproj
+├── WebmentionFs.slnx          # Solution file (XML format)
+└── README.md
+```
+
 ### Development Setup
 
 1. Clone the repository:
@@ -336,15 +361,44 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
    cd WebmentionFs
    ```
 
-2. Build the project:
+2. Build the entire solution:
    ```bash
-   dotnet build
+   dotnet build WebmentionFs.slnx
    ```
 
-3. Run interactive tests:
+3. Run the tests:
    ```bash
-   dotnet fsi test.fsx
+   dotnet test WebmentionFs.slnx
    ```
+
+   Or run tests directly from the test project:
+   ```bash
+   dotnet test tests/WebmentionFs.Tests/WebmentionFs.Tests.fsproj
+   ```
+
+4. Build only the main library:
+   ```bash
+   dotnet build src/WebmentionFs/WebmentionFs.fsproj
+   ```
+
+### Running Tests
+
+The project uses [XUnit](https://xunit.net/) as the testing framework. Tests are located in the `tests/WebmentionFs.Tests/` directory.
+
+To run all tests:
+```bash
+dotnet test
+```
+
+To run tests with detailed output:
+```bash
+dotnet test --verbosity normal
+```
+
+To run tests for a specific project:
+```bash
+dotnet test tests/WebmentionFs.Tests/WebmentionFs.Tests.fsproj
+```
 
 ### F# Conventions
 

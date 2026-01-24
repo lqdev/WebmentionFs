@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WebmentionFs/WebmentionFs.fsproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WebmentionFs.Tests/WebmentionFs.Tests.fsproj" />
+  </Folder>
+</Solution>
