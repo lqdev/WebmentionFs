@@ -4,6 +4,7 @@ open System
 open Microsoft.AspNetCore.Http
 open FSharp.Data
 open WebmentionFs
+open WebmentionFs.Constants
 open Utils
 
 /// <summary>
@@ -59,8 +60,8 @@ type UrlDiscoveryService () =
                 // Find "link" header that contains "webmention"
                 let webmentionHeader =
                     responseHeaders
-                    |> Seq.filter(fun (k,_) -> k = "link")
-                    |> Seq.map(fun (_,v) -> v |> Seq.filter(fun header -> header.Contains("webmention")))
+                    |> Seq.filter(fun (k,_) -> k = Http.linkHeader)
+                    |> Seq.map(fun (_,v) -> v |> Seq.filter(fun header -> header.Contains(Http.webmentionRel)))
                     |> Seq.head
                     |> List.ofSeq
                     |> List.head
@@ -90,7 +91,7 @@ type UrlDiscoveryService () =
     let discoverUrlInLinkTagAsync (data:UrlData) = 
         try
             task {
-                return! getEndpointFromHref data "link[rel='webmention']"
+                return! getEndpointFromHref data EndpointSelectors.linkElement
             }
         with
             | ex -> task { return DiscoveryError $"{ex}" }         
@@ -103,7 +104,7 @@ type UrlDiscoveryService () =
     let discoverUrlInAnchorTagAsync (data: UrlData) = 
         try
             task {
-                return! getEndpointFromHref data "a[rel='webmention']"
+                return! getEndpointFromHref data EndpointSelectors.anchorElement
             }
         with
             | ex -> task { return DiscoveryError $"{ex}" }
@@ -120,7 +121,7 @@ type UrlDiscoveryService () =
         let authority = data.RequestBody.Target.GetLeftPart(UriPartial.Authority)
 
         let constructedUrl = 
-            match scheme.Contains("http") with
+            match scheme.Contains(Http.httpScheme) with
             | true -> data.Endpoint
             | false -> 
                 let noQueryUrl = 
@@ -153,7 +154,7 @@ type UrlDiscoveryService () =
 
             let result = 
                 match discoveryResults.IsEmpty with
-                | true -> DiscoveryError "No webmention endpoint available"
+                | true -> DiscoveryError ErrorMessages.noEndpoint
                 | false -> 
                     discoveryResults 
                     |> List.head 

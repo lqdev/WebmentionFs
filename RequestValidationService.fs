@@ -5,6 +5,7 @@ open System.Net.Http
 open Microsoft.AspNetCore.Http
 open WebmentionFs
 open WebmentionFs.Utils
+open WebmentionFs.Constants
 
 /// <summary>
 /// Service for validating incoming webmention requests.
@@ -76,7 +77,7 @@ type RequestValidationService (hostList: string array) =
                 return 
                     match isTargetValid with
                     | true -> RequestSuccess r
-                    | false -> RequestError "Target is not a valid resource"
+                    | false -> RequestError ErrorMessages.invalidTarget
             }
         | RequestError e -> task { return RequestError e}
 

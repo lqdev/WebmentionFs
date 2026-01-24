@@ -5,6 +5,7 @@ open System.Net.Http
 open FSharp.Data
 open WebmentionFs
 open WebmentionFs.Utils
+open WebmentionFs.Constants
 
 /// <summary>
 /// Service for validating that a source document contains a valid mention of the target URL.
@@ -41,23 +42,23 @@ type WebmentionValidationService () =
 
         // Get mentions annotated as bookmarks
         let bookmarks = 
-            (getUrlFromSourceDocument doc ".u-bookmark-of" target)
+            (getUrlFromSourceDocument doc MentionSelectors.bookmark target)
             |> findTargetUrlInSourceDocument target.OriginalString
 
         // Get mentions annotated as replies
         let replies = 
-            (getUrlFromSourceDocument doc ".u-in-reply-to" target)
+            (getUrlFromSourceDocument doc MentionSelectors.reply target)
             |> findTargetUrlInSourceDocument target.OriginalString
 
         // Get mentions annotated as likes 
         let likes = 
-            (getUrlFromSourceDocument doc ".u-like-of" target)
+            (getUrlFromSourceDocument doc MentionSelectors.like target)
             |> findTargetUrlInSourceDocument target.OriginalString
 
 
         // Get mentions annotated as reposts
         let reposts = 
-            (getUrlFromSourceDocument doc ".u-repost-of" target)
+            (getUrlFromSourceDocument doc MentionSelectors.repost target)
             |> findTargetUrlInSourceDocument target.OriginalString
 
         // Group all annotated webmentions
@@ -66,7 +67,7 @@ type WebmentionValidationService () =
 
         // Group all unannotated webmentions
         let unannotatedMentions = 
-            (getUrlFromSourceDocument doc "a" target)
+            (getUrlFromSourceDocument doc MentionSelectors.anchor target)
             |> findTargetUrlInSourceDocument target.OriginalString
 
         annotatedMentions,unannotatedMentions
@@ -87,7 +88,7 @@ type WebmentionValidationService () =
     /// <returns>AnnotatedMention with type classification, UnannotatedMention, or MentionError if no mentions found.</returns>
     let validate (annotatedMentions:string list list, unannotatedMentions:string list) = 
         match annotatedMentions.IsEmpty,unannotatedMentions.IsEmpty with
-        | true, true -> MentionError "Target not mentioned"
+        | true, true -> MentionError ErrorMessages.targetNotMentioned
         | true, false | false, false -> 
             let isBookmark = hasMention annotatedMentions[0]
             let isLike = hasMention annotatedMentions[1]
@@ -124,5 +125,5 @@ type WebmentionValidationService () =
                     target
                     |> findMentionsInSourceDocument html
                     |> validate
-            | false -> return MentionError "Could not get source document"
+            | false -> return MentionError ErrorMessages.cannotGetSource
         }

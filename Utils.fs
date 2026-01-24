@@ -11,6 +11,7 @@ module Utils =
     open System.Net.Http.Headers
     open Microsoft.AspNetCore.Http
     open FSharp.Data
+    open Constants
 
     /// <summary>
     /// Extracts source and target URLs from an HTTP form body.
@@ -22,8 +23,8 @@ module Utils =
     /// </remarks>
     let getSourceAndTargetUrlsFromFormBody (req:HttpRequest) = 
         try
-            let source = req.Form["source"].ToString() |> Uri
-            let target = req.Form["target"].ToString() |> Uri
+            let source = req.Form[FormFields.source].ToString() |> Uri
+            let target = req.Form[FormFields.target].ToString() |> Uri
             ParseSuccess { Source=source; Target=target }
         with
             | ex -> ParseError $"{ex}" 
@@ -61,7 +62,7 @@ module Utils =
             reqMessage.Headers.Accept.Clear()
 
             // Only accept text/html content
-            reqMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"))
+            reqMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(Http.htmlContentType))
 
             //Send HTTP request
             return! client.SendAsync(reqMessage)
