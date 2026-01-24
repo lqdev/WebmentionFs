@@ -27,7 +27,7 @@ type WebmentionReceiverService (
                 match requestValidationResult with
                 | RequestSuccess r -> 
                     let! webmentionValidationResult = 
-                        x.WembentionValidationService.ValidateAsync r.Source r.Target
+                        x.WebmentionValidationService.ValidateAsync r.Source r.Target
 
                     let (result:ValidationResult<Webmention>) = 
                         match webmentionValidationResult with
@@ -57,7 +57,7 @@ type WebmentionReceiverService (
                 match requestValidationResult with
                 | RequestSuccess r -> 
                     let! webmentionValidationResult = 
-                        x.WembentionValidationService.ValidateAsync r.Source r.Target
+                        x.WebmentionValidationService.ValidateAsync r.Source r.Target
 
                     let (result:ValidationResult<Webmention>) = 
                         match webmentionValidationResult with
@@ -81,7 +81,7 @@ type WebmentionReceiverService (
             }            
 
     member x.RequestValidationService = requestValidationService
-    member x.WembentionValidationService = webmentionValidationService
+    member x.WebmentionValidationService = webmentionValidationService
 
 
 

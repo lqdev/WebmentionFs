@@ -62,7 +62,7 @@ type UrlDiscoveryService () =
 
                 return DiscoverySuccess { Endpoint = new Uri(sanitizedWebmentionUrl) ; RequestBody = data }
             with
-                | ex -> return DiscoveryError "${ex}"                 
+                | ex -> return DiscoveryError $"{ex}"                 
         }          
 
     let discoverUrlInLinkTagAsync (data:UrlData) = 
