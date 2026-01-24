@@ -6,14 +6,29 @@ open Microsoft.AspNetCore.Http
 open WebmentionFs
 open WebmentionFs.Utils
 
-type RequestValidationService (hostList: string array) = 
+/// <summary>
+/// Service for validating incoming webmention requests.
+/// Ensures that webmention requests meet W3C specification requirements including
+/// protocol validation, target URL ownership verification, and preventing self-mentions.
+/// </summary>
+/// <param name="hostList">Array of domain names owned by the service to validate target URLs against.</param>
+type RequestValidationService (hostList: string array) =
 
-    // Check whether a URL is one of the domains I own
+    /// <summary>
+    /// Checks whether a URL belongs to one of the configured domains.
+    /// </summary>
+    /// <param name="uri">The URI to check.</param>
+    /// <param name="hostList">Array of valid host names.</param>
+    /// <returns>True if the URI's host is in the list, false otherwise.</returns>
     let isUrlMine (uri:Uri) (hostList:string array)= 
         hostList |> Array.contains uri.Host
 
-    // Check that the source and target URL protocols are HTTP or HTTPS
-    let isProtocolValid (result:RequestValidationResult) = 
+    /// <summary>
+    /// Validates that both source and target URLs use HTTP or HTTPS protocols.
+    /// </summary>
+    /// <param name="result">The validation result to check.</param>
+    /// <returns>RequestSuccess if both protocols are valid, RequestError with descriptive message otherwise.</returns>
+    let isProtocolValid (result:RequestValidationResult) =
         match result with
         | RequestSuccess r -> 
             let sourceProtocol = r.Source.Scheme.Equals("http") || r.Source.Scheme.Equals("https")
@@ -29,8 +44,12 @@ type RequestValidationService (hostList: string array) =
             protocolResult
         | RequestError e -> RequestError e
 
-    // Compare source and target URLs to check whether they're the same
-    let isSameUrl (result:RequestValidationResult) = 
+    /// <summary>
+    /// Validates that source and target URLs are different to prevent self-referential webmentions.
+    /// </summary>
+    /// <param name="result">The validation result to check.</param>
+    /// <returns>RequestSuccess if URLs differ, RequestError if they are the same.</returns>
+    let isSameUrl (result:RequestValidationResult) =
         match result with 
         | RequestSuccess r -> 
             match r.Source.Equals(r.Target) with
@@ -38,9 +57,13 @@ type RequestValidationService (hostList: string array) =
             | false -> RequestSuccess r
         | RequestError e -> RequestError e
 
-    // Check whether target URL is valid. 
-    // Valid in this case means, I own the domain and the document doesn't return a 400 or 500 HTML status code
-    let isTargetUrlValidAsync (result:RequestValidationResult) = 
+    /// <summary>
+    /// Validates that the target URL is owned by this service and is accessible.
+    /// Checks domain ownership and that the resource returns a successful HTTP status code.
+    /// </summary>
+    /// <param name="result">The validation result to check.</param>
+    /// <returns>A task with RequestSuccess if target is valid and accessible, RequestError otherwise.</returns>
+    let isTargetUrlValidAsync (result:RequestValidationResult) =
         match result with 
         | RequestSuccess r -> 
             task {
@@ -57,11 +80,19 @@ type RequestValidationService (hostList: string array) =
             }
         | RequestError e -> task { return RequestError e}
 
-    // Compose validation pipeline 
+    /// <summary>
+    /// Composes the validation pipeline using function composition.
+    /// Validates protocol, checks for self-mention, and verifies target URL.
+    /// </summary>
     let validateAsync = 
         isProtocolValid >> isSameUrl >> isTargetUrlValidAsync
 
-    member _.ValidateAsync (req:HttpRequest) = 
+    /// <summary>
+    /// Validates a webmention request from HTTP form data.
+    /// </summary>
+    /// <param name="req">The HTTP request containing form data with source and target URLs.</param>
+    /// <returns>A task with RequestSuccess containing validated URL data, or RequestError with error message.</returns>
+    member _.ValidateAsync (req:HttpRequest) =
         
         let parseResults = getSourceAndTargetUrlsFromFormBody req
 
@@ -73,7 +104,12 @@ type RequestValidationService (hostList: string array) =
             } 
         | ParseError e -> task { return RequestError e }
 
-    member _.ValidateAsync (data:UrlData) = 
+    /// <summary>
+    /// Validates a webmention request from structured URL data.
+    /// </summary>
+    /// <param name="data">The UrlData containing source and target URLs.</param>
+    /// <returns>A task with RequestSuccess containing validated URL data, or RequestError with error message.</returns>
+    member _.ValidateAsync (data:UrlData) =
         
         task { 
             let! validationResult = RequestSuccess data |> validateAsync
